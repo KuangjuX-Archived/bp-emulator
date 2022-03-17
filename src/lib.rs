@@ -124,8 +124,10 @@ impl Predictor for GShareBranchPredictor {
         let gbhr = self.gbhr.get_bits(0..self.n);
         let bits = self.m + 2;
         let pc = pc.get_bits(2..bits);
-        let xor_bits = pc.get_bits(self.m - self.n..self.m) ^ gbhr;
+        // println!("{:#x}, {:#x}", pc.get_bits((self.m - self.n)..self.m), pc.get_bits(0..self.m - self.n));
+        let xor_bits = pc.get_bits((self.m - self.n)..self.m) ^ gbhr;
         let select_bits = (xor_bits << (self.m - self.n)) | pc.get_bits(0..self.m - self.n);
+        // println!("pc: {:#x}, gbhr: {:#x}, xor_bits: {:#x}, select_bits: {:#x}", pc, gbhr, xor_bits, select_bits);
         self.num += 1;
         let mut predict_jump: bool = false;
         let mut counter: u8 = 0;
@@ -144,10 +146,14 @@ impl Predictor for GShareBranchPredictor {
         if is_jump != predict_jump { self.error += 1; }
         if is_jump { 
             if counter <= 2 { counter += 1 }
-            self.gbhr = (self.gbhr << 1) + 1;
+            // self.gbhr = (self.gbhr << 1) + 1;
+            self.gbhr = self.gbhr >> 1;
+            self.gbhr.set_bit(self.n - 1, true);
         }else {
             if counter >= 1 { counter -= 1 }
-            self.gbhr = self.gbhr << 1;
+            // self.gbhr = self.gbhr << 1;
+            self.gbhr = self.gbhr >> 1;
+            self.gbhr.set_bit(self.n - 1, false);
         }
         self.bht.0.insert(select_bits, Counter(counter)).unwrap();
     }
