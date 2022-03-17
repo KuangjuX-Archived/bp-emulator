@@ -1,11 +1,19 @@
 use std::fs::File;
 use std::io::{BufReader, BufRead};
+use std::env;
 use regex::Regex;
-use bp_emulator::BimodalBranchPredictor;
+use bp_emulator::{ BimodalBranchPredictor, Predictor };
 
 fn main() {
-    let mut bp = BimodalBranchPredictor::new();
-    let file = File::open("traces/gcc_trace.txt").unwrap();
+    let args = env::args().collect::<Vec<String>>();
+    if args.len() < 3 {
+        panic!("[Error] Least three arguments")
+    }
+    let m = usize::from_str_radix(args[1].as_str(), 16).unwrap();
+    let trace = &args[2];
+    
+    let mut bp = BimodalBranchPredictor::new(m);
+    let file = File::open(trace).unwrap();
     let reader = BufReader::new(file);
     let mut line_counts = 0;
     for line in reader.lines() {

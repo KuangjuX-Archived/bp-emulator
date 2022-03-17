@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 regex = "1"
+bit_field = "0.10.1"
