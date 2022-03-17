@@ -34,5 +34,6 @@ fn main() {
             }
         }
     }
-    bp.print_res();
+    let mut output = File::create("gshare.txt").unwrap();
+    bp.output(&mut output);
 }

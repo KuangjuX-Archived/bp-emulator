@@ -15,10 +15,8 @@ fn main() {
     let mut bp = BimodalBranchPredictor::new(m);
     let file = File::open(trace).unwrap();
     let reader = BufReader::new(file);
-    let mut line_counts = 0;
     for line in reader.lines() {
         if let Ok(line) = line {
-            line_counts += 1;
             let pattern = Regex::new(r"([0-9a-fA-F]+) ([a-zA-Z])").unwrap();
             let cap = pattern.captures(&line).unwrap();
             let pc = usize::from_str_radix(&cap[1], 16).unwrap();
@@ -28,10 +26,8 @@ fn main() {
                 _ => panic!("[Error] Invalid result")
             };
             bp.predict(pc, res);
-            if line_counts >= 2000 {
-                break;
-            }
         }
     }
-    bp.print_res();
+    let mut output = File::create("bimodal.txt").unwrap();
+    bp.output(&mut output);
 }

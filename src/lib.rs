@@ -1,9 +1,28 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io::Write};
 use bit_field::BitField;
+use std::fs::File;
 
 pub trait Predictor {
     fn predict(&mut self, pc: usize, is_jump: bool); 
-    fn print_res(&self);
+    fn num(&self) -> usize;
+    fn error(&self) -> usize;
+    fn bht(&self) -> &BranchHistoryTable;
+    fn bits(&self) -> usize;
+    fn output(&self, file: &mut File) {
+        file.write(format!("number of predictions: {}", self.num()).as_bytes()).unwrap();
+        file.write((format!("number of mispredictions: {}", self.error())).as_bytes()).unwrap();
+        file.write(format!("misprediction rate: {}", self.error() as f32 / self.num() as f32).as_bytes()).unwrap();
+        
+        for pc in 0..(1 << self.bits()) as usize {
+            let mut s = String::new();
+            if let Some(counter) = self.bht().0.get(&pc) {
+                s = format!("{} {}", pc, counter.0);
+            }else{
+                s = format!("{}, {}", pc, 1);
+            }
+            file.write(s.as_bytes()).unwrap();
+        }
+    }
 }
 
 
@@ -61,12 +80,17 @@ impl Predictor for BimodalBranchPredictor {
         }else {
             if counter >= 1 { counter -= 1 }
         }
+        // println!("[Debug] counter: {}", counter);
         self.bht.0.insert(select_bits, Counter(counter)).unwrap();
     }
+    fn num(&self) -> usize { self.num }
 
-    fn print_res(&self) {
-        println!("[Debug] 预测数目: {}, 预测失败数目: {}, 预测错误率: {}", self.num, self.error, self.error as f64  / self.num as f64);
-    }
+    fn error(&self) -> usize { self.error }
+
+    fn bht(&self) -> &BranchHistoryTable { &self.bht }
+
+    fn bits(&self) -> usize { self.m }
+
 }
 
 pub struct GShareBranchPredictor {
@@ -127,7 +151,12 @@ impl Predictor for GShareBranchPredictor {
         self.bht.0.insert(select_bits, Counter(counter)).unwrap();
     }
 
-    fn print_res(&self) {
-        println!("[Debug] 预测数目: {}, 预测失败数目: {}, 预测错误率: {}", self.num, self.error, self.error as f64  / self.num as f64);
-    }
+    fn num(&self) -> usize { self.num }
+
+    fn error(&self) -> usize { self.error }
+
+    fn bht(&self) -> &BranchHistoryTable { &self.bht }
+
+    fn bits(&self) -> usize { self.m }
+
 }
