@@ -22,7 +22,7 @@ fn main() {
             let pc = usize::from_str_radix(&cap[1], 16).unwrap();
             let res = match &cap[2] {
                 "t" => { true },
-                "n" => { false },
+                "n" => { false },        
                 _ => panic!("[Error] Invalid result")
             };
             bp.predict(pc, res);

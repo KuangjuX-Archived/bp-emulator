@@ -16,10 +16,8 @@ fn main() {
     let mut bp = GShareBranchPredictor::new(m, n);
     let file = File::open(trace).unwrap();
     let reader = BufReader::new(file);
-    let mut line_counts = 0;
     for line in reader.lines() {
         if let Ok(line) = line {
-            line_counts += 1;
             let pattern = Regex::new(r"([0-9a-fA-F]+) ([a-zA-Z])").unwrap();
             let cap = pattern.captures(&line).unwrap();
             let pc = usize::from_str_radix(&cap[1], 16).unwrap();
@@ -29,11 +27,8 @@ fn main() {
                 _ => panic!("[Error] Invalid result")
             };
             bp.predict(pc, res);
-            if line_counts >= 2000 {
-                break;
-            }
         }
     }
-    let mut output = File::create("gshare.txt").unwrap();
+    let mut output = File::create("gshare_1.txt").unwrap();
     bp.output(&mut output);
 }

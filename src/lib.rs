@@ -9,16 +9,16 @@ pub trait Predictor {
     fn bht(&self) -> &BranchHistoryTable;
     fn bits(&self) -> usize;
     fn output(&self, file: &mut File) {
-        file.write(format!("number of predictions: {}", self.num()).as_bytes()).unwrap();
-        file.write((format!("number of mispredictions: {}", self.error())).as_bytes()).unwrap();
-        file.write(format!("misprediction rate: {}", self.error() as f32 / self.num() as f32).as_bytes()).unwrap();
+        file.write(format!("number of predictions: {}\n", self.num()).as_bytes()).unwrap();
+        file.write((format!("number of mispredictions: {}\n", self.error())).as_bytes()).unwrap();
+        file.write(format!("misprediction rate: {}\n", self.error() as f32 / self.num() as f32).as_bytes()).unwrap();
         
         for pc in 0..(1 << self.bits()) as usize {
             let mut s = String::new();
             if let Some(counter) = self.bht().0.get(&pc) {
-                s = format!("{} {}", pc, counter.0);
+                s = format!("{} {}\n", pc, counter.0);
             }else{
-                s = format!("{}, {}", pc, 1);
+                s = format!("{} {}\n", pc, 1);
             }
             file.write(s.as_bytes()).unwrap();
         }
@@ -122,9 +122,10 @@ impl GShareBranchPredictor {
 impl Predictor for GShareBranchPredictor {
     fn predict(&mut self, pc: usize, is_jump: bool) {
         let gbhr = self.gbhr.get_bits(0..self.n);
-        let pc = pc.get_bits(2..self.m + 2);
+        let bits = self.m + 2;
+        let pc = pc.get_bits(2..bits);
         let xor_bits = pc.get_bits(self.m - self.n..self.m) ^ gbhr;
-        let select_bits = (xor_bits << self.m - self.n) | self.gbhr;
+        let select_bits = (xor_bits << (self.m - self.n)) | pc.get_bits(0..self.m - self.n);
         self.num += 1;
         let mut predict_jump: bool = false;
         let mut counter: u8 = 0;
