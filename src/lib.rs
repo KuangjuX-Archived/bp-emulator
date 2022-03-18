@@ -11,7 +11,7 @@ pub trait Predictor {
     fn output(&self, file: &mut File) {
         file.write(format!("number of predictions: {}\n", self.num()).as_bytes()).unwrap();
         file.write((format!("number of mispredictions: {}\n", self.error())).as_bytes()).unwrap();
-        file.write(format!("misprediction rate: {}\n", self.error() as f32 / self.num() as f32).as_bytes()).unwrap();
+        file.write(format!("misprediction rate: {:.2}%\n", (self.error() as f32 / self.num() as f32) * 100.0).as_bytes()).unwrap();
         
         for pc in 0..(1 << self.bits()) as usize {
             let mut s = String::new();
