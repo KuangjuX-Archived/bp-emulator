@@ -6,12 +6,13 @@ use bp_emulator::{ Predictor, GShareBranchPredictor };
 
 fn main() {
     let args = env::args().collect::<Vec<String>>();
-    if args.len() < 4 {
+    if args.len() < 5 {
         panic!("[Error] Least three arguments")
     }
     let m = usize::from_str_radix(args[1].as_str(), 10).unwrap();
     let n = usize::from_str_radix(args[2].as_str(), 10).unwrap();
     let trace = &args[3];
+    let output_file = &args[4];
     
     let mut bp = GShareBranchPredictor::new(m, n);
     let file = File::open(trace).unwrap();
@@ -29,6 +30,6 @@ fn main() {
             bp.predict(pc, res);
         }
     }
-    let mut output = File::create("gshare_1.txt").unwrap();
+    let mut output = File::create(output_file).unwrap();
     bp.output(&mut output);
 }
