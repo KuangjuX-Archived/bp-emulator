@@ -9,9 +9,10 @@ fn main() {
     if args.len() < 4 {
         panic!("[Error] Least three arguments")
     }
-    let m = usize::from_str_radix(args[1].as_str(), 16).unwrap();
+    let m = usize::from_str_radix(args[1].as_str(), 10).unwrap();
     let trace = &args[2];
     let output_file = &args[3];
+    println!("m: {}, trace: {}, output_file: {}", m, trace, output_file);
     
     let mut bp = BimodalBranchPredictor::new(m);
     let file = File::open(trace).unwrap();

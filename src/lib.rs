@@ -14,11 +14,11 @@ pub trait Predictor {
         file.write(format!("misprediction rate: {:.2}%\n", (self.error() as f32 / self.num() as f32) * 100.0).as_bytes()).unwrap();
         
         for pc in 0..(1 << self.bits()) as usize {
-            let mut s = String::new();
+            let s: String;
             if let Some(counter) = self.bht().0.get(&pc) {
                 s = format!("{} {}\n", pc, counter.0);
             }else{
-                s = format!("{} {}\n", pc, 1);
+                s = format!("{} {}\n", pc, 2);
             }
             file.write(s.as_bytes()).unwrap();
         }
@@ -59,8 +59,8 @@ impl Predictor for BimodalBranchPredictor {
         let bits = self.m + 2;
         let select_bits = pc.get_bits(2..bits);
         self.num += 1;
-        let mut predict_jump: bool = false;
-        let mut counter: u8 = 0;
+        let predict_jump: bool;
+        let mut counter: u8;
         // 获取分支预测的结果
         if let Some(predict_counter) = self.bht.0.get(&select_bits) {
             counter = predict_counter.0;
@@ -70,8 +70,8 @@ impl Predictor for BimodalBranchPredictor {
                 _ => { panic!("[Error] Invalid counter") }
             }
         }else {
-            let _ = self.bht.0.insert(select_bits, Counter(1));
             counter = 2;
+            let _ = self.bht.0.insert(select_bits, Counter(counter));
             predict_jump = true;
         }
         if is_jump != predict_jump { self.error += 1; }
@@ -126,8 +126,8 @@ impl Predictor for GShareBranchPredictor {
         let xor_bits = pc.get_bits((self.m - self.n)..self.m) ^ gbhr;
         let select_bits = (xor_bits << (self.m - self.n)) | pc.get_bits(0..self.m - self.n);
         self.num += 1;
-        let mut predict_jump: bool = false;
-        let mut counter: u8 = 0;
+        let predict_jump: bool;
+        let mut counter: u8;
         if let Some(predict_counter) = self.bht.0.get(&select_bits) {
             counter = predict_counter.0;
             match predict_counter.0 {
@@ -136,7 +136,7 @@ impl Predictor for GShareBranchPredictor {
                 _ => { panic!("[Error] Invalid counter") }
             }
         }else {
-            let _ = self.bht.0.insert(select_bits, Counter(1));
+            let _ = self.bht.0.insert(select_bits, Counter(2));
             counter = 2;
             predict_jump = true;
         }
