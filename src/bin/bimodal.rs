@@ -12,6 +12,8 @@ fn main() {
     let m = usize::from_str_radix(args[1].as_str(), 10).unwrap();
     let trace = &args[2];
     let output_file = &args[3];
+    let trace_name: Vec<&str> = trace.split("/").collect();
+    let trace_name: String = String::from(trace_name[1]);
     println!("m: {}, trace: {}, output_file: {}", m, trace, output_file);
     
     let mut bp = BimodalBranchPredictor::new(m);
@@ -31,5 +33,5 @@ fn main() {
         }
     }
     let mut output = File::create(output_file).unwrap();
-    bp.output(&mut output);
+    bp.output(&mut output, trace_name);
 }

@@ -13,6 +13,8 @@ fn main() {
     let n = usize::from_str_radix(args[2].as_str(), 10).unwrap();
     let trace = &args[3];
     let output_file = &args[4];
+    let trace_name: Vec<&str> = trace.split("/").collect();
+    let trace_name: String = String::from(trace_name[1]);
     
     let mut bp = GShareBranchPredictor::new(m, n);
     let file = File::open(trace).unwrap();
@@ -31,5 +33,5 @@ fn main() {
         }
     }
     let mut output = File::create(output_file).unwrap();
-    bp.output(&mut output);
+    bp.output(&mut output, trace_name);
 }

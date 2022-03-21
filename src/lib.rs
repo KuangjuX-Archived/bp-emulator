@@ -8,11 +8,17 @@ pub trait Predictor {
     fn error(&self) -> usize;
     fn bht(&self) -> &BranchHistoryTable;
     fn bits(&self) -> usize;
-    fn output(&self, file: &mut File) {
+    fn output_command(&self, file: &mut File, trace: String);
+    fn output_format(&self, file: &mut File);
+    fn output(&self, file: &mut File, trace: String) {
+        self.output_command(file, trace);
+        file.write(format!("OUTPUT\n").as_bytes()).unwrap();
         file.write(format!("number of predictions: {}\n", self.num()).as_bytes()).unwrap();
         file.write((format!("number of mispredictions: {}\n", self.error())).as_bytes()).unwrap();
         file.write(format!("misprediction rate: {:.2}%\n", (self.error() as f32 / self.num() as f32) * 100.0).as_bytes()).unwrap();
         
+        // file.write(format!("FINAL BIMODAL CONTENTS\n").as_bytes()).unwrap();
+        self.output_format(file);
         for pc in 0..(1 << self.bits()) as usize {
             let s: String;
             if let Some(counter) = self.bht().0.get(&pc) {
@@ -90,6 +96,14 @@ impl Predictor for BimodalBranchPredictor {
 
     fn bits(&self) -> usize { self.m }
 
+    fn output_command(&self, file: &mut File, trace: String) {
+        file.write(format!("COMMAND\n").as_bytes()).unwrap();
+        file.write(format!("./sim bimodal {} 0 0 {}\n", self.m, trace).as_bytes()).unwrap();
+    }
+
+    fn output_format(&self, file: &mut File) {
+        file.write(format!("FINAL BIMODAL CONTENTS\n").as_bytes()).unwrap();
+    }
 }
 
 pub struct GShareBranchPredictor {
@@ -161,4 +175,12 @@ impl Predictor for GShareBranchPredictor {
 
     fn bits(&self) -> usize { self.m }
 
+    fn output_command(&self, file: &mut File, trace: String) {
+        file.write(format!("COMMAND\n").as_bytes()).unwrap();
+        file.write(format!("./sim gshare {} {} 0 0 {}\n", self.m, self.n, trace).as_bytes()).unwrap();
+    }
+
+    fn output_format(&self, file: &mut File) {
+        file.write(format!("FINAL GSHARE CONTENTS\n").as_bytes()).unwrap();
+    }
 }
