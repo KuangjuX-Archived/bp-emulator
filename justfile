@@ -15,3 +15,4 @@ gshare:
 
 clean:
     cargo clean
+    rm *.txt
